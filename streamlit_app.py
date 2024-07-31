@@ -21,8 +21,11 @@ def default_chat():
     # Capture Enter key press event or button click event
     if (prompt and st.session_state.get('last_input', None) != prompt) or (enter_button and prompt):
         st.session_state.last_input = prompt
-        response = st.session_state.chat_session.send_message(prompt)
-        handle_response(prompt, response)
+        try:
+            response = st.session_state.chat_session.send_message(prompt)
+            handle_response(prompt, response)
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
     elif enter_button and not prompt:
         st.warning("Please enter a message first.")
 
@@ -52,37 +55,41 @@ def toggle_history_visibility():
         st.session_state.show_history = not st.session_state.get("show_history", False)
 
 # Configure Gemini API with the API key loaded from environment variable
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    st.error("API key for Gemini is not set. Please set the GEMINI_API_KEY environment variable.")
+else:
+    genai.configure(api_key=api_key)
 
-# Create the Streamlit app
-def main():
-    st.set_page_config(page_title="Gemini Chat Demo")
-    st.header("🤖ChadGPT: Your Intelligent Chat Assistant")
-    st.write("""
-    Welcome to **ChadGPT**, your versatile and intelligent chat assistant powered by advanced generative AI technology! 
-    ChadGPT is designed to assist you with a wide range of tasks, including answering questions, providing detailed explanations, generating creative content, and helping with various information needs.
-""")
+    # Create the Streamlit app
+    def main():
+        st.set_page_config(page_title="Gemini Chat Demo")
+        st.header("🤖ChadGPT: Your Intelligent Chat Assistant")
+        st.write("""
+        Welcome to **ChadGPT**, your versatile and intelligent chat assistant powered by advanced generative AI technology! 
+        ChadGPT is designed to assist you with a wide range of tasks, including answering questions, providing detailed explanations, generating creative content, and helping with various information needs.
+    """)
 
-    info()
+        info()
 
-    # Default chatbot behavior
-    default_chat()
+        # Default chatbot behavior
+        default_chat()
 
-    # Toggle visibility of chat history
-    toggle_history_visibility()
+        # Toggle visibility of chat history
+        toggle_history_visibility()
 
-    if st.session_state.get("show_history"):
-        st.subheader("Conversation History:")
-        if 'chat_history' in st.session_state and st.session_state.chat_history:
-            for entry in st.session_state.chat_history:
-                st.markdown(f"<p style='text-align: center;'>{entry}</p>", unsafe_allow_html=True)
-        else:
-            st.markdown("<p style='text-align: center;'>None</p>", unsafe_allow_html=True)
+        if st.session_state.get("show_history"):
+            st.subheader("Conversation History:")
+            if 'chat_history' in st.session_state and st.session_state.chat_history:
+                for entry in st.session_state.chat_history:
+                    st.markdown(f"<p style='text-align: center;'>{entry}</p>", unsafe_allow_html=True)
+            else:
+                st.markdown("<p style='text-align: center;'>None</p>", unsafe_allow_html=True)
 
-    if st.button("Reset Conversation"):
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        st.session_state.chat_session = model.start_chat()
-        st.session_state.chat_history = []  # Clear history when resetting
+        if st.button("Reset Conversation"):
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            st.session_state.chat_session = model.start_chat()
+            st.session_state.chat_history = []  # Clear history when resetting
 
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
