@@ -8,7 +8,7 @@ from info import info
 # Function to handle default chatbot behavior
 def default_chat():
     if 'chat_session' not in st.session_state:
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         st.session_state.chat_session = model.start_chat()
         st.session_state.chat_history = []
 
@@ -36,7 +36,7 @@ def handle_response(prompt, response):
     gmt8_now = datetime.now(pytz.utc).astimezone(ph_time)
     timestamp = gmt8_now.strftime("%B %d, %Y - %I:%M:%S%p")
 
-    # Format user prompt and chatbot response for conversation history
+    # Format user mpt and chatbot response for conversation history
     formatted_entry = f"{timestamp}\n\nYou asked: {prompt}\n\nChadGPT replied:\n{response.text}\n"
 
     # Add a divider after each conversation entry
@@ -87,7 +87,7 @@ else:
                 st.markdown("<p style='text-align: center;'>None</p>", unsafe_allow_html=True)
 
         if st.button("Reset Conversation"):
-            model = genai.GenerativeModel('gemini-1.5-pro')
+            model = genai.GenerativeModel('gemini-2.0-flash')
             st.session_state.chat_session = model.start_chat()
             st.session_state.chat_history = []  # Clear history when resetting
 
